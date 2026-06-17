@@ -1,0 +1,50 @@
+[
+  {
+    "id": "note_001",
+    "lead_id": "lead_001",
+    "note": "Called Rahul. Very interested in the CRM package. Needs a demo scheduled for next week.",
+    "timestamp": "2025-06-02T10:00:00"
+  },
+  {
+    "id": "note_002",
+    "lead_id": "lead_001",
+    "note": "Demo completed successfully. Rahul is impressed with the features. Sent proposal document.",
+    "timestamp": "2025-06-05T15:30:00"
+  },
+  {
+    "id": "note_003",
+    "lead_id": "lead_002",
+    "note": "Spoke with Priya. She wants billing and GST integration as priority features.",
+    "timestamp": "2025-06-04T11:00:00"
+  },
+  {
+    "id": "note_004",
+    "lead_id": "lead_003",
+    "note": "Emailed Arjun with our backend development packages. Waiting for his response.",
+    "timestamp": "2025-06-06T09:00:00"
+  },
+  {
+    "id": "note_005",
+    "lead_id": "lead_003",
+    "note": "Arjun replied. Wants a call on Monday to discuss timeline and tech stack.",
+    "timestamp": "2025-06-08T17:00:00"
+  },
+  {
+    "id": "note_006",
+    "lead_id": "lead_004",
+    "note": "Project confirmed. Sneha signed the agreement. Work starts Monday.",
+    "timestamp": "2025-06-09T14:00:00"
+  },
+  {
+    "id": "note_007",
+    "lead_id": "lead_006",
+    "note": "Detailed requirements call done. Anjali wants student progress tracking and live class features.",
+    "timestamp": "2025-06-11T10:00:00"
+  },
+  {
+    "id": "note_008",
+    "lead_id": "lead_009",
+    "note": "Karan wants a full compliance-ready dashboard. Sent initial wireframes for review.",
+    "timestamp": "2025-06-14T11:00:00"
+  }
+]

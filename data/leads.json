@@ -1,0 +1,134 @@
+[
+  {
+    "id": "lead_2daab56d",
+    "name": "happy",
+    "email": "happy@gmail.com",
+    "phone": "4569517532",
+    "company": "zyx",
+    "message": "hi there",
+    "source": "Social Media",
+    "status": "Contacted",
+    "created_at": "2026-06-17T13:52:31"
+  },
+  {
+    "id": "lead_e34f05a5",
+    "name": "sharvani",
+    "email": "sharvani@gmail.com",
+    "phone": "9845621456",
+    "company": "",
+    "message": "hi there",
+    "source": "Referral",
+    "status": "Contacted",
+    "created_at": "2026-06-17T13:49:01"
+  },
+  {
+    "id": "lead_001",
+    "name": "Rahul Sharma",
+    "email": "rahul.sharma@techsolutions.in",
+    "phone": "+91 98765 43210",
+    "company": "TechSolutions Pvt Ltd",
+    "message": "We are looking for a custom CRM solution for our sales team of 20 people. Please get in touch.",
+    "source": "Website",
+    "status": "Qualified",
+    "created_at": "2025-06-01T09:30:00"
+  },
+  {
+    "id": "lead_002",
+    "name": "Priya Mehta",
+    "email": "priya.mehta@gmail.com",
+    "phone": "+91 87654 32109",
+    "company": "Mehta Retail",
+    "message": "Interested in inventory management and billing software for my clothing store.",
+    "source": "Referral",
+    "status": "Contacted",
+    "created_at": "2025-06-03T11:15:00"
+  },
+  {
+    "id": "lead_003",
+    "name": "Arjun Patel",
+    "email": "arjun.patel@startupxyz.com",
+    "phone": "+91 76543 21098",
+    "company": "StartupXYZ",
+    "message": "Need a scalable backend for our upcoming mobile app launch. Looking for a long-term tech partner.",
+    "source": "Social Media",
+    "status": "Follow-up",
+    "created_at": "2025-06-05T14:00:00"
+  },
+  {
+    "id": "lead_004",
+    "name": "Sneha Kulkarni",
+    "email": "sneha.k@designhouse.co",
+    "phone": "+91 65432 10987",
+    "company": "Design House Co",
+    "message": "Looking for a complete website redesign and brand identity package.",
+    "source": "Cold Outreach",
+    "status": "Closed/Won",
+    "created_at": "2025-06-07T10:00:00"
+  },
+  {
+    "id": "lead_005",
+    "name": "Vikram Singh",
+    "email": "vikram.singh@logisticsco.in",
+    "phone": "+91 54321 09876",
+    "company": "FastTrack Logistics",
+    "message": "Need an automated fleet tracking and delivery management system.",
+    "source": "Website",
+    "status": "Contacted",
+    "created_at": "2025-06-08T16:30:00"
+  },
+  {
+    "id": "lead_006",
+    "name": "Anjali Reddy",
+    "email": "anjali.reddy@edutech.org",
+    "phone": "+91 43210 98765",
+    "company": "EduTech Academy",
+    "message": "We need a Learning Management System for 500+ students. Looking for a custom solution.",
+    "source": "Referral",
+    "status": "Qualified",
+    "created_at": "2025-06-10T09:00:00"
+  },
+  {
+    "id": "lead_007",
+    "name": "Rohan Gupta",
+    "email": "rohan.gupta@realestate.in",
+    "phone": "+91 32109 87654",
+    "company": "Gupta Properties",
+    "message": "Looking for a property listing and CRM platform for our real estate business.",
+    "source": "Other",
+    "status": "Follow-up",
+    "created_at": "2025-06-11T13:45:00"
+  },
+  {
+    "id": "lead_008",
+    "name": "Divya Nair",
+    "email": "divya.nair@healthplus.com",
+    "phone": "+91 21098 76543",
+    "company": "HealthPlus Clinic",
+    "message": "Need a patient management and appointment booking system for our chain of 3 clinics.",
+    "source": "Social Media",
+    "status": "Contacted",
+    "created_at": "2025-06-12T10:20:00"
+  },
+  {
+    "id": "lead_009",
+    "name": "Karan Malhotra",
+    "email": "karan.m@finserv.co.in",
+    "phone": "+91 10987 65432",
+    "company": "FinServ Solutions",
+    "message": "Interested in a financial dashboard and reporting tool for our NBFC.",
+    "source": "Cold Outreach",
+    "status": "Qualified",
+    "created_at": "2025-06-13T15:00:00"
+  },
+  {
+    "id": "lead_010",
+    "name": "Meera Joshi",
+    "email": "meera.joshi@boutique.in",
+    "phone": "+91 90876 54321",
+    "company": "Meera's Boutique",
+    "message": "Want to set up an online store with payment gateway and order tracking for my boutique.",
+    "source": "Website",
+    "status": "Closed/Won",
+    "created_at": "2025-06-14T12:00:00"
+  }
+]

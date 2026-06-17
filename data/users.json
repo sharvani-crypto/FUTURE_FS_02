@@ -1,0 +1,8 @@
+[
+  {
+    "username": "admin",
+    "password": "scrypt:32768:8:1$wZso7Vs6D4g87dyn$39381f97f3a392dfb07e9107a31b38503db097f3c91d7ec2e99c951e16f810458a14a4a4b51c0fd186ec5a76334a183901355b497505ed83e31e4cdb86f3d351",
+    "name": "Admin User",
+    "email": "admin@clientlead.com"
+  }
+]

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login — Client Lead Management</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-container">
+    {% for category, message in messages %}
+    <div class="flash flash-{{ category }}">
+      {% if category == 'success' %}<i class="fa-solid fa-circle-check"></i>
+      {% elif category == 'error' %}<i class="fa-solid fa-circle-xmark"></i>
+      {% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}
+      <span class="flash-text">{{ message }}</span>
+      <button class="flash-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<div class="login-page">
+  <div class="login-card">
+
+    <!-- Logo -->
+    <div class="login-header">
+      <div class="login-logo">
+        <i class="fa-solid fa-briefcase"></i>
+      </div>
+      <h1>Admin Login</h1>
+      <p>Sign in to access the lead management panel</p>
+    </div>
+
+    <!-- Form -->
+    <form
+      method="POST"
+      action="{{ url_for('login') }}"
+      id="loginForm"
+      novalidate
+    >
+
+      <div class="form-group">
+        <label for="username">
+          <i class="fa-solid fa-user" style="color:var(--text-muted); font-size:12px;"></i>
+          Username
+        </label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          class="form-control"
+          placeholder="admin"
+          required
+          autocomplete="username"
+          autofocus
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">
+          <i class="fa-solid fa-lock" style="color:var(--text-muted); font-size:12px;"></i>
+          Password
+        </label>
+        <div style="position:relative;">
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-control"
+            placeholder="••••••••"
+            required
+            autocomplete="current-password"
+            style="padding-right: 40px;"
+          />
+          <button
+            type="button"
+            id="togglePw"
+            style="position:absolute; right:10px; top:50%; transform:translateY(-50%);
+                   background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:14px;"
+            aria-label="Toggle password visibility"
+          >
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">
+        <i class="fa-solid fa-right-to-bracket"></i> Sign In
+      </button>
+
+    </form>
+
+    <div class="login-footer">
+      <p>
+        <i class="fa-solid fa-shield-halved" style="color:var(--text-muted);"></i>
+        Restricted to authorised admins only
+      </p>
+      <p style="margin-top:6px;">
+        <a href="{{ url_for('index') }}">
+          <i class="fa-solid fa-arrow-left"></i> Back to contact form
+        </a>
+      </p>
+    </div>
+
+    <!-- Dev helper hint -->
+    <div style="margin-top:20px; padding:12px; background:var(--bg-grey);
+                border-radius:var(--radius); font-size:12px; color:var(--text-muted); text-align:center;">
+      <i class="fa-solid fa-circle-info"></i>
+      Default: <strong>admin</strong> / <strong>admin123</strong>
+    </div>
+
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script>
+  // Toggle password visibility
+  document.getElementById('togglePw').addEventListener('click', function() {
+    const pw = document.getElementById('password');
+    const icon = this.querySelector('i');
+    if (pw.type === 'password') {
+      pw.type = 'text';
+      icon.className = 'fa-solid fa-eye-slash';
+    } else {
+      pw.type = 'password';
+      icon.className = 'fa-solid fa-eye';
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Analytics — Client Lead Management</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-container">
+    {% for category, message in messages %}
+    <div class="flash flash-{{ category }}">
+      {% if category == 'success' %}<i class="fa-solid fa-circle-check"></i>
+      {% elif category == 'error'  %}<i class="fa-solid fa-circle-xmark"></i>
+      {% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}
+      <span class="flash-text">{{ message }}</span>
+      <button class="flash-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<div class="app-layout">
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ── Sidebar ──────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="fa-solid fa-briefcase"></i></div>
+      <div class="brand-name">Client Lead Mgmt<span>Admin Panel</span></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">Main</div>
+      <ul>
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard') }}">
+            <i class="fa-solid fa-house"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('analytics') }}" class="active">
+            <i class="fa-solid fa-chart-line"></i> Analytics
+          </a>
+        </li>
+      </ul>
+      <div class="nav-label">Leads</div>
+      <ul>
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard') }}?status=Contacted">
+            <i class="fa-solid fa-phone"></i> Contacted
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard') }}?status=Follow-up">
+            <i class="fa-solid fa-rotate"></i> Follow-up
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard') }}?status=Qualified">
+            <i class="fa-solid fa-star"></i> Qualified
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard') }}?status=Closed%2FWon">
+            <i class="fa-solid fa-trophy"></i> Closed / Won
+          </a>
+        </li>
+      </ul>
+      <div class="nav-label">Tools</div>
+      <ul>
+        <li class="nav-item">
+          <a href="{{ url_for('index') }}" target="_blank">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Contact Form
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-info">
+        <div class="admin-avatar">{{ session.admin_name[0]|upper }}</div>
+        <div>
+          <div class="admin-name">{{ session.admin_name }}</div>
+          <div class="admin-role">Administrator</div>
+        </div>
+      </div>
+      <form action="{{ url_for('logout') }}" method="GET">
+        <button type="submit" class="logout-btn">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ──────────────────────────────────────────── -->
+  <div class="main-content">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div>
+          <div class="page-title">Analytics</div>
+          <div class="page-subtitle">Lead performance overview</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-date" id="topbarDate"></span>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline btn-sm">
+          <i class="fa-solid fa-arrow-left"></i> Dashboard
+        </a>
+      </div>
+    </div>
+
+    <!-- Page Body -->
+    <div class="page-body">
+
+      <!-- Key Metrics -->
+      <div class="metric-cards mb-3">
+        <div class="metric-card">
+          <div class="metric-value blue" data-count="{{ stats.total }}">{{ stats.total }}</div>
+          <div class="metric-label">Total Leads</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value blue" data-count="{{ stats.contacted }}">{{ stats.contacted }}</div>
+          <div class="metric-label">Contacted</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value yellow" data-count="{{ stats.follow_up }}">{{ stats.follow_up }}</div>
+          <div class="metric-label">Follow-up</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value green" data-count="{{ stats.qualified }}">{{ stats.qualified }}</div>
+          <div class="metric-label">Qualified</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value teal" data-count="{{ stats.closed_won }}">{{ stats.closed_won }}</div>
+          <div class="metric-label">Closed / Won</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-value green">{{ conversion }}%</div>
+          <div class="metric-label">Conversion Rate</div>
+        </div>
+      </div>
+
+      <!-- Charts Row 1 -->
+      <div class="charts-grid mb-3">
+
+        <!-- Status Breakdown Bar Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa-solid fa-chart-bar"></i> Leads by Status
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="statusChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Source Doughnut Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fa-solid fa-chart-pie"></i> Leads by Source
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="sourceChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Timeline Line Chart -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fa-solid fa-chart-line"></i> Leads Over Time (last 14 days)
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-container" style="height: 220px;">
+            <canvas id="timelineChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!-- /page-body -->
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script>
+/* ── Chart.js — shared defaults ─────────────────────────── */
+Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+Chart.defaults.font.size   = 12;
+Chart.defaults.color       = '#6B7280';
+
+const COLORS = {
+  blue:   '#2563EB',
+  yellow: '#D97706',
+  green:  '#059669',
+  teal:   '#0D9488',
+  purple: '#7C3AED',
+  red:    '#DC2626',
+  pink:   '#DB2777',
+  orange: '#EA580C',
+};
+
+/* ── Status Bar Chart ───────────────────────────────────── */
+new Chart(document.getElementById('statusChart'), {
+  type: 'bar',
+  data: {
+    labels: {{ status_labels | tojson }},
+    datasets: [{
+      label: 'Leads',
+      data: {{ status_data | tojson }},
+      backgroundColor: [
+        '#DBEAFE', '#FEF3C7', '#D1FAE5', '#CCFBF1'
+      ],
+      borderColor: [
+        '#2563EB', '#D97706', '#059669', '#0D9488'
+      ],
+      borderWidth: 2,
+      borderRadius: 8,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.parsed.y} lead${ctx.parsed.y !== 1 ? 's' : ''}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+      },
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1, precision: 0 },
+        grid: { color: '#F3F4F6' },
+        border: { display: false },
+      }
+    }
+  }
+});
+
+/* ── Source Doughnut Chart ──────────────────────────────── */
+const sourceColors = [
+  '#DBEAFE', '#FEF3C7', '#D1FAE5', '#CCFBF1', '#EDE9FE', '#FCE7F3'
+];
+const sourceBorders = [
+  '#2563EB', '#D97706', '#059669', '#0D9488', '#7C3AED', '#DB2777'
+];
+
+new Chart(document.getElementById('sourceChart'), {
+  type: 'doughnut',
+  data: {
+    labels: {{ source_labels | tojson }},
+    datasets: [{
+      data: {{ source_data | tojson }},
+      backgroundColor: sourceColors,
+      borderColor: sourceBorders,
+      borderWidth: 2,
+      hoverOffset: 8,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '62%',
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: {
+          padding: 16,
+          usePointStyle: true,
+          pointStyle: 'circle',
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.label}: ${ctx.parsed} lead${ctx.parsed !== 1 ? 's' : ''}`
+        }
+      }
+    }
+  }
+});
+
+/* ── Timeline Line Chart ────────────────────────────────── */
+new Chart(document.getElementById('timelineChart'), {
+  type: 'line',
+  data: {
+    labels: {{ timeline_labels | tojson }},
+    datasets: [{
+      label: 'Leads',
+      data: {{ timeline_data | tojson }},
+      borderColor: '#2563EB',
+      backgroundColor: 'rgba(37,99,235,0.08)',
+      borderWidth: 2.5,
+      pointBackgroundColor: '#2563EB',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 5,
+      tension: 0.4,
+      fill: true,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.parsed.y} lead${ctx.parsed.y !== 1 ? 's' : ''}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        border: { display: false },
+        ticks: { maxRotation: 45 }
+      },
+      y: {
+        beginAtZero: true,
+        ticks: { stepSize: 1, precision: 0 },
+        grid: { color: '#F3F4F6' },
+        border: { display: false },
+      }
+    }
+  }
+});
+
+/* ── Animated counters ──────────────────────────────────── */
+document.querySelectorAll('.metric-value[data-count]').forEach(el => {
+  const target = parseInt(el.dataset.count, 10);
+  const start = performance.now();
+  const duration = 900;
+  const update = (time) => {
+    const t = Math.min((time - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(target * ease);
+    if (t < 1) requestAnimationFrame(update);
+  };
+  requestAnimationFrame(update);
+});
+</script>
+</body>
+</html>

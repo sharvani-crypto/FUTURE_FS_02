@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Us — Client Lead Management</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-container">
+    {% for category, message in messages %}
+    <div class="flash flash-{{ category }}">
+      {% if category == 'success' %}<i class="fa-solid fa-circle-check"></i>
+      {% elif category == 'error' %}<i class="fa-solid fa-circle-xmark"></i>
+      {% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}
+      <span class="flash-text">{{ message }}</span>
+      <button class="flash-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<div class="public-page">
+
+  <!-- Navigation -->
+  <nav class="public-nav">
+    <div class="public-nav-brand">
+      <i class="fa-solid fa-briefcase"></i>
+      Client Lead Management
+    </div>
+    <a href="{{ url_for('login') }}" class="btn btn-primary btn-sm">
+      <i class="fa-solid fa-lock"></i> Admin Login
+    </a>
+  </nav>
+
+  <!-- Hero -->
+  <div class="public-hero">
+    <h1>Get in Touch</h1>
+    <p>Tell us about your project or inquiry. Our team will get back to you within 24 hours.</p>
+  </div>
+
+  <!-- Contact Form -->
+  <div class="public-body">
+    <div class="contact-form-card">
+
+      <!-- Success State (shown after submission) -->
+      <div class="form-success" id="formSuccess">
+        <i class="fa-solid fa-circle-check"></i>
+        <h3>Message Sent!</h3>
+        <p>Thanks for reaching out. We'll be in touch within 24 hours.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary mt-2">Send Another</a>
+      </div>
+
+      <!-- The Form -->
+      <div id="contactFormWrap">
+        <h2>Send us a message</h2>
+        <p>Fill in your details below and we'll get back to you soon.</p>
+
+        <form
+          method="POST"
+          action="{{ url_for('submit_lead') }}"
+          id="contactForm"
+          novalidate
+          style="margin-top: 24px;"
+        >
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Full Name <span class="req">*</span></label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                class="form-control"
+                placeholder="Rahul Sharma"
+                required
+                autocomplete="name"
+              />
+            </div>
+            <div class="form-group">
+              <label for="email">Email Address <span class="req">*</span></label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                class="form-control"
+                placeholder="rahul@example.com"
+                required
+                autocomplete="email"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                class="form-control"
+                placeholder="+91 98765 43210"
+                autocomplete="tel"
+              />
+            </div>
+            <div class="form-group">
+              <label for="company">Company / Business</label>
+              <input
+                type="text"
+                id="company"
+                name="company"
+                class="form-control"
+                placeholder="Your Company (optional)"
+                autocomplete="organization"
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="source">How did you find us?</label>
+            <select id="source" name="source" class="form-control">
+              <option value="Website">Website</option>
+              <option value="Referral">Referral</option>
+              <option value="Social Media">Social Media</option>
+              <option value="Cold Outreach">Cold Outreach</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="message">Message <span class="req">*</span></label>
+            <textarea
+              id="message"
+              name="message"
+              class="form-control"
+              rows="4"
+              placeholder="Tell us about your project, requirements, or any questions…"
+              required
+            ></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%;">
+            <i class="fa-solid fa-paper-plane"></i> Send Message
+          </button>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer style="text-align:center; padding:20px; font-size:12px; color: var(--text-muted); border-top:1px solid var(--border); background: var(--bg-white);">
+    &copy; 2025 Client Lead Management &nbsp;·&nbsp;
+    <a href="{{ url_for('login') }}">Admin Panel</a>
+  </footer>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script>
+  // Client-side validation before submit
+  document.getElementById('contactForm').addEventListener('submit', function(e) {
+    const name    = document.getElementById('name').value.trim();
+    const email   = document.getElementById('email').value.trim();
+    const message = document.getElementById('message').value.trim();
+
+    if (!name || !email || !message) {
+      e.preventDefault();
+      alert('Please fill in Name, Email and Message fields.');
+      return;
+    }
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRe.test(email)) {
+      e.preventDefault();
+      alert('Please enter a valid email address.');
+    }
+  });
+</script>
+</body>
+</html>

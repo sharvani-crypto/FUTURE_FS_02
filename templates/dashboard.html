@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Client Lead Management</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-container">
+    {% for category, message in messages %}
+    <div class="flash flash-{{ category }}">
+      {% if category == 'success' %}<i class="fa-solid fa-circle-check"></i>
+      {% elif category == 'error'   %}<i class="fa-solid fa-circle-xmark"></i>
+      {% elif category == 'warning' %}<i class="fa-solid fa-triangle-exclamation"></i>
+      {% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}
+      <span class="flash-text">{{ message }}</span>
+      <button class="flash-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <div class="modal-icon"><i class="fa-solid fa-trash-can" style="color:var(--danger);"></i></div>
+    <h3>Delete Lead?</h3>
+    <p>This will permanently remove the lead and all its notes. This cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="cancelDelete">Cancel</button>
+      <button class="btn btn-danger" id="confirmDelete" style="background:var(--danger);color:#fff;border-color:var(--danger);">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="app-layout">
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ── Sidebar ─────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="fa-solid fa-briefcase"></i></div>
+      <div class="brand-name">
+        Client Lead Mgmt
+        <span>Admin Panel</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">Main</div>
+      <ul>
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard') }}" class="active">
+            <i class="fa-solid fa-house"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('analytics') }}">
+            <i class="fa-solid fa-chart-line"></i> Analytics
+          </a>
+        </li>
+      </ul>
+
+      <div class="nav-label">Leads</div>
+      <ul>
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard') }}?status=Contacted">
+            <i class="fa-solid fa-phone"></i> Contacted
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard') }}?status=Follow-up">
+            <i class="fa-solid fa-rotate"></i> Follow-up
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard') }}?status=Qualified">
+            <i class="fa-solid fa-star"></i> Qualified
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard') }}?status=Closed%2FWon">
+            <i class="fa-solid fa-trophy"></i> Closed / Won
+          </a>
+        </li>
+      </ul>
+
+      <div class="nav-label">Tools</div>
+      <ul>
+        <li class="nav-item">
+          <a href="{{ url_for('index') }}" target="_blank">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Contact Form
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-info">
+        <div class="admin-avatar">{{ session.admin_name[0]|upper }}</div>
+        <div>
+          <div class="admin-name">{{ session.admin_name }}</div>
+          <div class="admin-role">Administrator</div>
+        </div>
+      </div>
+      <form action="{{ url_for('logout') }}" method="GET">
+        <button type="submit" class="logout-btn">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ──────────────────────────────────────────── -->
+  <div class="main-content">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle sidebar">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-subtitle">Manage all incoming leads</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-date" id="topbarDate"></span>
+        <a href="{{ url_for('index') }}" target="_blank" class="btn btn-outline btn-sm">
+          <i class="fa-solid fa-plus"></i> New Lead
+        </a>
+      </div>
+    </div>
+
+    <!-- Page Body -->
+    <div class="page-body">
+
+      <!-- Stats Row -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" data-count="{{ stats.total }}">{{ stats.total }}</div>
+            <div class="stat-label">Total Leads</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fa-solid fa-phone"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" data-count="{{ stats.contacted }}">{{ stats.contacted }}</div>
+            <div class="stat-label">Contacted</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon yellow"><i class="fa-solid fa-rotate"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" data-count="{{ stats.follow_up }}">{{ stats.follow_up }}</div>
+            <div class="stat-label">Follow-up</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fa-solid fa-star"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" data-count="{{ stats.qualified }}">{{ stats.qualified }}</div>
+            <div class="stat-label">Qualified</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon teal"><i class="fa-solid fa-trophy"></i></div>
+          <div class="stat-info">
+            <div class="stat-value" data-count="{{ stats.closed_won }}">{{ stats.closed_won }}</div>
+            <div class="stat-label">Closed / Won</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leads Table Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="fa-solid fa-table-list"></i>
+            All Leads
+          </div>
+          <!-- Toolbar -->
+          <div class="toolbar">
+            <div class="search-wrap">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input
+                type="text"
+                class="search-input"
+                id="searchInput"
+                placeholder="Search by name, email, company…"
+                autocomplete="off"
+              />
+            </div>
+            <select class="filter-select" id="statusFilter">
+              <option value="">All Statuses</option>
+              {% for s in statuses %}
+              <option value="{{ s }}">{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Lead</th>
+                <th>Phone</th>
+                <th>Company</th>
+                <th>Source</th>
+                <th>Received</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="leadsTableBody">
+
+              {% if leads %}
+                {% for lead in leads %}
+                <tr
+                  class="lead-row"
+                  data-status="{{ lead.status }}"
+                >
+                  <!-- Lead name + email -->
+                  <td>
+                    <div class="lead-name">{{ lead.name }}</div>
+                    <div class="lead-email">{{ lead.email }}</div>
+                  </td>
+
+                  <!-- Phone -->
+                  <td>
+                    {% if lead.phone %}
+                      <a href="tel:{{ lead.phone }}" style="color:var(--text-primary);">
+                        {{ lead.phone }}
+                      </a>
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+
+                  <!-- Company -->
+                  <td>
+                    <div class="lead-company">
+                      {{ lead.company if lead.company else '—' }}
+                    </div>
+                  </td>
+
+                  <!-- Source -->
+                  <td>
+                    <span class="fs-13">{{ lead.source }}</span>
+                  </td>
+
+                  <!-- Date -->
+                  <td>
+                    <span class="fs-13" style="white-space:nowrap;">
+                      {{ lead.created_at[:10] }}
+                    </span>
+                  </td>
+
+                  <!-- Status badge -->
+                  <td>
+                    {% set s = lead.status %}
+                    {% if s == 'Contacted' %}
+                      <span class="badge badge-contacted">{{ s }}</span>
+                    {% elif s == 'Follow-up' %}
+                      <span class="badge badge-follow-up">{{ s }}</span>
+                    {% elif s == 'Qualified' %}
+                      <span class="badge badge-qualified">{{ s }}</span>
+                    {% elif s == 'Closed/Won' %}
+                      <span class="badge badge-closed-won">{{ s }}</span>
+                    {% else %}
+                      <span class="badge badge-new">{{ s }}</span>
+                    {% endif %}
+                  </td>
+
+                  <!-- Actions -->
+                  <td>
+                    <div class="actions">
+                      <a
+                        href="{{ url_for('lead_detail', lead_id=lead.id) }}"
+                        class="btn btn-outline btn-sm"
+                        title="View lead"
+                      >
+                        <i class="fa-solid fa-eye"></i> View
+                      </a>
+                      <form
+                        action="{{ url_for('delete_lead', lead_id=lead.id) }}"
+                        method="POST"
+                        style="display:inline;"
+                      >
+                        <button
+                          type="button"
+                          class="btn btn-danger btn-sm btn-icon btn-delete-lead"
+                          title="Delete lead"
+                        >
+                          <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+
+              {% endif %}
+
+            </tbody>
+          </table>
+
+          <!-- Empty state -->
+          {% if not leads %}
+          <div class="empty-state" id="emptyTableMsg">
+            <i class="fa-solid fa-inbox"></i>
+            <h3>No leads yet</h3>
+            <p>Leads submitted via the contact form will appear here.</p>
+          </div>
+          {% else %}
+          <div class="empty-state" id="emptyTableMsg" style="display:none;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <h3>No results found</h3>
+            <p>Try a different search term or filter.</p>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+      <!-- /card -->
+
+    </div>
+    <!-- /page-body -->
+
+  </div>
+  <!-- /main-content -->
+</div>
+<!-- /app-layout -->
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script>
+  // Pre-fill filter if URL has ?status=
+  const params = new URLSearchParams(window.location.search);
+  const preStatus = params.get('status');
+  if (preStatus) {
+    const sel = document.getElementById('statusFilter');
+    if (sel) { sel.value = preStatus; sel.dispatchEvent(new Event('input')); }
+  }
+</script>
+</body>
+</html>

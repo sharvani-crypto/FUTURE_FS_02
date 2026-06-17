@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ lead.name }} — Lead Detail</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-container">
+    {% for category, message in messages %}
+    <div class="flash flash-{{ category }}">
+      {% if category == 'success' %}<i class="fa-solid fa-circle-check"></i>
+      {% elif category == 'error'  %}<i class="fa-solid fa-circle-xmark"></i>
+      {% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}
+      <span class="flash-text">{{ message }}</span>
+      <button class="flash-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<!-- Delete Modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <div class="modal-icon"><i class="fa-solid fa-trash-can" style="color:var(--danger);"></i></div>
+    <h3>Delete Lead?</h3>
+    <p>This will permanently remove <strong>{{ lead.name }}</strong> and all their notes.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="cancelDelete">Cancel</button>
+      <button class="btn" id="confirmDelete"
+        style="background:var(--danger);color:#fff;border-color:var(--danger);">
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="app-layout">
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ── Sidebar ──────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon"><i class="fa-solid fa-briefcase"></i></div>
+      <div class="brand-name">
+        Client Lead Mgmt
+        <span>Admin Panel</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">Main</div>
+      <ul>
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard') }}">
+            <i class="fa-solid fa-house"></i> Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('analytics') }}">
+            <i class="fa-solid fa-chart-line"></i> Analytics
+          </a>
+        </li>
+      </ul>
+      <div class="nav-label">Leads</div>
+      <ul>
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard') }}?status=Contacted">
+            <i class="fa-solid fa-phone"></i> Contacted
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard') }}?status=Follow-up">
+            <i class="fa-solid fa-rotate"></i> Follow-up
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard') }}?status=Qualified">
+            <i class="fa-solid fa-star"></i> Qualified
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('dashboard') }}?status=Closed%2FWon">
+            <i class="fa-solid fa-trophy"></i> Closed / Won
+          </a>
+        </li>
+      </ul>
+      <div class="nav-label">Tools</div>
+      <ul>
+        <li class="nav-item">
+          <a href="{{ url_for('index') }}" target="_blank">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Contact Form
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-info">
+        <div class="admin-avatar">{{ session.admin_name[0]|upper }}</div>
+        <div>
+          <div class="admin-name">{{ session.admin_name }}</div>
+          <div class="admin-role">Administrator</div>
+        </div>
+      </div>
+      <form action="{{ url_for('logout') }}" method="GET">
+        <button type="submit" class="logout-btn">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ──────────────────────────────────────────── -->
+  <div class="main-content">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div>
+          <div class="page-title">Lead Detail</div>
+          <div class="page-subtitle">{{ lead.name }}</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-date" id="topbarDate"></span>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline btn-sm">
+          <i class="fa-solid fa-arrow-left"></i> Back
+        </a>
+      </div>
+    </div>
+
+    <!-- Page Body -->
+    <div class="page-body">
+
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <i class="fa-solid fa-chevron-right"></i>
+        <span class="current">{{ lead.name }}</span>
+      </div>
+
+      <!-- Header row: name + quick actions -->
+      <div class="d-flex align-center gap-3 mb-3" style="flex-wrap:wrap;">
+        <div style="flex:1; min-width:200px;">
+          <h2 style="margin-bottom:6px;">{{ lead.name }}</h2>
+          <div class="d-flex align-center gap-2">
+            {% set s = lead.status %}
+            {% if s == 'Contacted' %}
+              <span class="badge badge-contacted" id="currentStatusBadge">{{ s }}</span>
+            {% elif s == 'Follow-up' %}
+              <span class="badge badge-follow-up" id="currentStatusBadge">{{ s }}</span>
+            {% elif s == 'Qualified' %}
+              <span class="badge badge-qualified" id="currentStatusBadge">{{ s }}</span>
+            {% elif s == 'Closed/Won' %}
+              <span class="badge badge-closed-won" id="currentStatusBadge">{{ s }}</span>
+            {% else %}
+              <span class="badge badge-new" id="currentStatusBadge">{{ s }}</span>
+            {% endif %}
+            <span class="fs-12 text-muted">
+              <i class="fa-regular fa-clock"></i>
+              Added {{ lead.created_at[:10] }}
+            </span>
+          </div>
+        </div>
+        <!-- Delete -->
+        <form action="{{ url_for('delete_lead', lead_id=lead.id) }}" method="POST">
+          <button type="button" class="btn btn-danger btn-sm btn-delete-lead">
+            <i class="fa-solid fa-trash-can"></i> Delete Lead
+          </button>
+        </form>
+      </div>
+
+      <!-- Two-column detail grid -->
+      <div class="detail-grid">
+
+        <!-- LEFT: Lead Info -->
+        <div>
+          <div class="card mb-2">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-id-card"></i> Contact Information</div>
+            </div>
+            <div class="card-body" style="padding-top:8px; padding-bottom:8px;">
+              <div class="info-list">
+
+                <div class="info-item">
+                  <div class="info-icon"><i class="fa-solid fa-user"></i></div>
+                  <div>
+                    <div class="info-label">Full Name</div>
+                    <div class="info-value">{{ lead.name }}</div>
+                  </div>
+                </div>
+
+                <div class="info-item">
+                  <div class="info-icon"><i class="fa-solid fa-envelope"></i></div>
+                  <div>
+                    <div class="info-label">Email Address</div>
+                    <div class="info-value">
+                      <a href="mailto:{{ lead.email }}">{{ lead.email }}</a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="info-item">
+                  <div class="info-icon"><i class="fa-solid fa-phone"></i></div>
+                  <div>
+                    <div class="info-label">Phone Number</div>
+                    <div class="info-value">
+                      {% if lead.phone %}
+                        <a href="tel:{{ lead.phone }}">{{ lead.phone }}</a>
+                      {% else %}
+                        <span class="text-muted">Not provided</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="info-item">
+                  <div class="info-icon"><i class="fa-solid fa-building"></i></div>
+                  <div>
+                    <div class="info-label">Company / Business</div>
+                    <div class="info-value">{{ lead.company if lead.company else '—' }}</div>
+                  </div>
+                </div>
+
+                <div class="info-item">
+                  <div class="info-icon"><i class="fa-solid fa-arrow-pointer"></i></div>
+                  <div>
+                    <div class="info-label">Lead Source</div>
+                    <div class="info-value">{{ lead.source }}</div>
+                  </div>
+                </div>
+
+                <div class="info-item">
+                  <div class="info-icon"><i class="fa-regular fa-calendar"></i></div>
+                  <div>
+                    <div class="info-label">Date Received</div>
+                    <div class="info-value">{{ lead.created_at.replace('T', ' ') }}</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Message -->
+          <div class="card mb-2">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-message"></i> Message / Inquiry</div>
+            </div>
+            <div class="card-body">
+              <p style="color:var(--text-primary); line-height:1.7; font-size:14px;">
+                {{ lead.message }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Update Status -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="fa-solid fa-pen-to-square"></i> Update Status</div>
+            </div>
+            <div class="card-body">
+              <form
+                action="{{ url_for('update_status', lead_id=lead.id) }}"
+                method="POST"
+                id="statusUpdateForm"
+              >
+                <div class="status-update-row">
+                  <select name="status" class="form-control" style="flex:1; max-width:220px;">
+                    {% for s in statuses %}
+                    <option value="{{ s }}" {% if s == lead.status %}selected{% endif %}>
+                      {{ s }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Status
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Follow-up Notes -->
+        <div>
+          <div class="card" style="position:sticky; top: calc(var(--topbar-h) + 16px);">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-notes-medical"></i> Follow-up Notes
+              </div>
+              <span class="badge" style="background:var(--bg-grey); color:var(--text-secondary);">
+                {{ notes|length }}
+              </span>
+            </div>
+            <div class="card-body">
+
+              <!-- Notes Timeline -->
+              <div class="notes-timeline" id="notesTimeline">
+                {% if notes %}
+                  {% for note in notes %}
+                  <div class="note-item">
+                    <div class="note-dot"><i class="fa-solid fa-pen-nib"></i></div>
+                    <div class="note-content">
+                      <p class="note-text">{{ note.note }}</p>
+                      <p class="note-time">
+                        <i class="fa-regular fa-clock"></i>
+                        {{ note.timestamp.replace('T', ' ') }}
+                      </p>
+                    </div>
+                  </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="empty-state" id="notesEmpty" style="padding:30px 0;">
+                    <i class="fa-regular fa-note-sticky"></i>
+                    <h3>No notes yet</h3>
+                    <p>Add your first follow-up note below.</p>
+                  </div>
+                {% endif %}
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- Add Note Form -->
+              <form
+                action="{{ url_for('add_note', lead_id=lead.id) }}"
+                method="POST"
+                id="noteForm"
+                class="note-form"
+              >
+                <div class="form-group mb-1">
+                  <label for="note">Add a Note</label>
+                  <textarea
+                    id="note"
+                    name="note"
+                    class="form-control"
+                    rows="3"
+                    placeholder="e.g. Called the client, scheduled demo for Monday…"
+                  ></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;">
+                  <i class="fa-solid fa-plus"></i> Add Note
+                </button>
+              </form>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <!-- /detail-grid -->
+
+    </div>
+    <!-- /page-body -->
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
